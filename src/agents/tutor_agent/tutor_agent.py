@@ -13,11 +13,12 @@ class TutorAgent(BaseAgent):
         
         messages =  [
                 SystemMessage(content=TUTOR_AGENT_SYSTEM_PROMPT),
-                # HumanMessage(content=state["user_query"])
-                HumanMessage(content="How to make so much money in 1 month?")
+                HumanMessage(content=state["user_query"])
             ]
                 
         llm_response = llm_with_structured_output.invoke(messages)
-        print(f"[{self.name}] LLM Response: ", llm_response.model_dump_json())
         
-        return { "agent_response": llm_response.model_dump_json(), "current_agent": self.name }
+        state["agent_response"] = llm_response.model_dump_json()
+        # print(f"[{self.name}] LLM Response: ", llm_response.model_dump_json())
+        
+        return state

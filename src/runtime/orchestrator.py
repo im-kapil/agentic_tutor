@@ -13,12 +13,10 @@ class Orchestrator:
             case Workflow.TUTOR:
                 workflow = Workflow.TUTOR.value()
                 
-                print(f"Starting workflow: {workflow} with state: {state}")
+                print(f"Starting workflow: {workflow}")
                 
                 workflow.start()
-                
-                print(f"Workflow state: {state}")
-                
+                            
                 return state
             case _:
                 print(f"Workflow {workflow} not found")     

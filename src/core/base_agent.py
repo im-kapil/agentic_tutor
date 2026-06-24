@@ -12,8 +12,7 @@ class BaseAgent(ABC):
         """LangGraph expects callable nodes"""
         try:
             print(f"[{self.name}] Running")
-            return await self.execute(state)
-            # return await self.invoke(state)
+            return self.execute(state)
         except Exception as e:
             print(f"[{self.name}] Error: {e}")
             raise
