@@ -16,3 +16,5 @@ aiofiles
 mcp
 langchain-mcp-adapters
 psycopg[binary]
+
+fastapi[standard]
