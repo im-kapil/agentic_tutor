@@ -1,11 +1,9 @@
 from collections.abc import AsyncIterable
-from email import message
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel
 
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
-from sse_starlette import ServerSentEvent
 
 from src.graph.state import state
 from src.graph.bootstrap import Bootstrap
@@ -14,7 +12,6 @@ from src.runtime.orchestrator import Orchestrator, Workflow, Workflow
 app = FastAPI(title="Agentic Mentorship Platform")
 
 import time
-
 
 async def data_streamer(agent_response):
     print("stream started")    
@@ -30,8 +27,6 @@ async def health():
 class UserQuery(BaseModel):
     user_query: str
     
-
-
 @app.post("/chat/stream", response_class=EventSourceResponse)
 async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
     start = time.time()
@@ -49,15 +44,13 @@ async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
     orchastrator.run(Workflow.TUTOR, "state")
     
     print("workflow finished", time.time() - start)
-    
-    formatted_text = ''
-     
+         
     print("stream started")    
     for chunk in state["agent_response"]:
         print(chunk)
         
-        yield chunk.content
-        # yield ServerSentEvent(data=str(chunk.content), event="Token", id=str(1 + 1), retry=5000)
+        # yield chunk.content
+        yield ServerSentEvent(data=str(chunk.content), event="Token")
 
 # @app.post("/chat/stream", response_class=StreamingResponse)
 # async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
