@@ -11,29 +11,46 @@ from src.runtime.orchestrator import Orchestrator, Workflow, Workflow
 
 app = FastAPI(title="Agentic Mentorship Platform")
 
+import time
+
+
+async def data_streamer(agent_response):
+    print("stream started")    
+    for chunk in agent_response:
+        print("Chunk type:", chunk.content)
+        # print("repr:::", repr(chunk))
+        yield f"data: {chunk.content}\n\n"
+
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
 
-message = """
-Rick: (stumbles in drunkenly, and turns on the lights) Morty! You gotta come on. You got--... you gotta come with me.
-Morty: (rubs his eyes) What, Rick? What's going on?
-Rick: I got a surprise for you, Morty.
-Morty: It's the middle of the night. What are you talking about?
-Rick: (spills alcohol on Morty's bed) Come on, I got a surprise for you. (drags Morty by the ankle) Come on, hurry up. (pulls Morty out of his bed and into the hall)
-Morty: Ow! Ow! You're tugging me too hard!
-Rick: We gotta go, gotta get outta here, come on. Got a surprise for you Morty.
-"""
-
 class UserQuery(BaseModel):
     user_query: str
 
-@app.post("/agent/stream", response_class=StreamingResponse)
-async def invoke_agent(user_query: UserQuery) -> AsyncIterable[str]:
+@app.post("/chat/stream", response_class=StreamingResponse)
+async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
+    start = time.time()
 
-    for line in message.splitlines():
-        yield line
+    bootstrap = Bootstrap()
+    bootstrap.register_agents()
+    bootstrap.register_llms()
 
+    state["user_query"] = user_query.user_query
+    
+    print("Received user query: ", state)
+
+    orchastrator = Orchestrator()
+    
+    orchastrator.run(Workflow.TUTOR, "state")
+    
+    print("workflow finished", time.time() - start)
+        
+    return StreamingResponse(
+        data_streamer(state["agent_response"]), 
+        media_type='text/event-stream'
+    )        
+    
 
 @app.post("/agent/invoke", response_class=StreamingResponse)
 async def invoke_agent(user_query: UserQuery) -> AsyncIterable[str]:
