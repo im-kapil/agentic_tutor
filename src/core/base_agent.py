@@ -8,7 +8,7 @@ class BaseAgent(ABC):
         self.tools = tools or []
         self.llm = llm
 
-    async def __call__(self, state: dict) -> dict:
+    def __call__(self, state: dict) -> dict:
         """LangGraph expects callable nodes"""
         try:
             print(f"[{self.name}] Running")
@@ -18,5 +18,5 @@ class BaseAgent(ABC):
             raise
 
     @abstractmethod
-    async def execute(self, state: dict) -> dict:
+    def execute(self, state: dict) -> dict:
         pass

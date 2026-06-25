@@ -1,9 +1,11 @@
 from collections.abc import AsyncIterable
 from email import message
+from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel
 
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from sse_starlette import ServerSentEvent
 
 from src.graph.state import state
 from src.graph.bootstrap import Bootstrap
@@ -27,8 +29,10 @@ async def health():
 
 class UserQuery(BaseModel):
     user_query: str
+    
 
-@app.post("/chat/stream", response_class=StreamingResponse)
+
+@app.post("/chat/stream", response_class=EventSourceResponse)
 async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
     start = time.time()
 
@@ -45,12 +49,38 @@ async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
     orchastrator.run(Workflow.TUTOR, "state")
     
     print("workflow finished", time.time() - start)
-        
-    return StreamingResponse(
-        data_streamer(state["agent_response"]), 
-        media_type='text/event-stream'
-    )        
     
+    formatted_text = ''
+     
+    print("stream started")    
+    for chunk in state["agent_response"]:
+        print(chunk)
+        
+        yield chunk.content
+        # yield ServerSentEvent(data=str(chunk.content), event="Token", id=str(1 + 1), retry=5000)
+
+# @app.post("/chat/stream", response_class=StreamingResponse)
+# async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
+#     start = time.time()
+
+#     bootstrap = Bootstrap()
+#     bootstrap.register_agents()
+#     bootstrap.register_llms()
+
+#     state["user_query"] = user_query.user_query
+    
+#     print("Received user query: ", state)
+
+#     orchastrator = Orchestrator()
+    
+#     orchastrator.run(Workflow.TUTOR, "state")
+    
+#     print("workflow finished", time.time() - start)
+        
+#     return StreamingResponse(
+#         data_streamer(state["agent_response"]), 
+#         media_type='text/event-stream'
+#     )        
 
 @app.post("/agent/invoke", response_class=StreamingResponse)
 async def invoke_agent(user_query: UserQuery) -> AsyncIterable[str]:

@@ -32,5 +32,5 @@ class BaseLLM(ABC):
         self.skills = skills or []
 
     @abstractmethod
-    async def execute(self, state: Dict[str, Any]):
+    def execute(self, state: Dict[str, Any]):
         pass
