@@ -51,6 +51,8 @@ async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
         
         # yield chunk.content
         yield ServerSentEvent(data=str(chunk.content), event="Token")
+    
+    #TODO: Implement event publishing here
 
 # @app.post("/chat/stream", response_class=StreamingResponse)
 # async def stream_agent_response(user_query: UserQuery) -> AsyncIterable[str]:
