@@ -9,16 +9,19 @@ class TutorAgent(BaseAgent):
         print(f"[{self.name}] Executing TutorAgent with state: ", state)
         
         # llm = self.llm.bind_tools(self.tools)
-        llm_with_structured_output = self.llm.with_structured_output(TUTOR_AGENT_RESPONSE_FORMAT)
+        # llm_with_structured_output = self.llm.with_structured_output(TUTOR_AGENT_RESPONSE_FORMAT)
+        
         
         messages =  [
                 SystemMessage(content=TUTOR_AGENT_SYSTEM_PROMPT),
                 HumanMessage(content=state["user_query"])
             ]
                 
-        llm_response = llm_with_structured_output.invoke(messages)
+        llm_response = self.llm.stream(messages)
         
-        state["agent_response"] = llm_response.model_dump_json()
+        print(f"[{self.name}] LLM Response: ", llm_response)
+        
+        state["agent_response"] = llm_response
         # print(f"[{self.name}] LLM Response: ", llm_response.model_dump_json())
         
         return state
